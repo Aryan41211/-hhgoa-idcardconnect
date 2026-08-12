@@ -1,0 +1,38 @@
+# dependencies
+node_modules
+
+# next.js
+.next
+out
+build
+
+# testing / coverage
+coverage
+
+# misc
+.DS_Store
+Thumbs.db
+*.pem
+npm-debug.log*
+*.log
+.idea/
+.vscode/
+
+# local environment files (keep .env.example tracked)
+.env
+.env*.local
+.env.local.*
+!.env.example
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# application runtime data (filesystem stores)
+.data
+
+# python helper artifacts
+__pycache__/

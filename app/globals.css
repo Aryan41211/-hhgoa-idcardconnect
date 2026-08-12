@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background:
+    radial-gradient(1200px 600px at 20% -10%, rgba(255, 62, 157, 0.12), transparent 60%),
+    radial-gradient(1000px 500px at 90% 20%, rgba(255, 197, 61, 0.08), transparent 60%),
+    #072a20;
+}
+
+/* react-easy-crop container fills its parent */
+.reactEasyCrop_Container {
+  border-radius: 0.75rem;
+}
