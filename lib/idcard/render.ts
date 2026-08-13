@@ -12,9 +12,9 @@ import { ensureFonts } from "@/lib/imageUtils";
 export const CARD_W = 1050;
 export const CARD_H = 675;
 
-// Numbered-edition seat badge ("#219 / 247" — this user is the 219th of 247
-// selected HH Goa builders).
+// Numbered-edition seat badge — every card renders "#143 / 247" (fixed seat).
 // TODO: confirm real total seat count for HH Goa 2026
+export const SEAT_NUMBER = 143;
 export const TOTAL_SEATS = 247;
 
 export type CropRect = { x: number; y: number; width: number; height: number };
@@ -112,16 +112,9 @@ function drawBarcode(ctx: CanvasRenderingContext2D, text: string, x: number, y: 
   }
 }
 
-/** Deterministic seat number from a card id — same card → same seat, always. */
-export function seatNumber(cardNumber: string, total = TOTAL_SEATS): number {
-  let seed = 0;
-  for (let i = 0; i < cardNumber.length; i++) seed = (seed * 31 + cardNumber.charCodeAt(i)) >>> 0;
-  return (seed % total) + 1;
-}
-
 /**
  * Numbered-edition ticket stub pill: white rounded pill, gold border, dashed
- * pink perforation, "SEAT" left + "#219 / 247" right, with punched notches.
+ * pink perforation, "SEAT" left + "#143 / 247" right, with punched notches.
  */
 function drawSeatStub(
   ctx: CanvasRenderingContext2D,
@@ -350,7 +343,7 @@ export function renderCard(ctx: CanvasRenderingContext2D, input: RenderInput) {
   });
 
   // SEAT — numbered-edition ticket stub (row 2, col 2)
-  drawSeatStub(ctx, dataX + cellW, 418, seatNumber(input.cardNumber));
+  drawSeatStub(ctx, dataX + cellW, 418, SEAT_NUMBER);
 
   // barcode footer (pulled up now that the signature row is gone)
   drawBarcode(ctx, input.cardNumber, W - 330, 480, 280, 72);
