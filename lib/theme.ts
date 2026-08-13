@@ -61,7 +61,7 @@ export const TEMPLATES = {
     ],
     teamClass: { x: 60, y: 436, w: 455, h: 98 },
     teamTagline: { x: 560, y: 444, w: 455, h: 98 },
-    chip: { x: 820, y: 514, w: 200, h: 34 },
+    chip: { x: 915, y: 518, w: 134, h: 31 },
   },
 } as const;
 

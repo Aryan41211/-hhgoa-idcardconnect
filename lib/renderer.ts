@@ -331,8 +331,8 @@ export function renderSquad(ctx: CanvasRenderingContext2D, opts: SquadOptions) {
   teamCard(ctx, T.teamTagline.x, T.teamTagline.y, T.teamTagline.w, T.teamTagline.h, "TEAM TAGLINE",
     (opts.teamTagline || "BUILD · SHIP · REPEAT").toUpperCase(), 0.02, COLORS.gold);
 
-  // #FRAMEINGOA chip, pinned bottom-right (same corner as the baked one)
-  hashtagChip(ctx, T.chip.x + 10, T.chip.y + T.chip.h / 2, 0.55, COLORS.punch);
+  // #FRAMEINGOA chip, pinned bottom-right corner, clear of the tagline card
+  hashtagChip(ctx, T.chip.x, T.chip.y, 0.5, COLORS.punch);
 
   // 4) name pills on each filled slot (bottom-inside)
   ctx.textAlign = "center";
