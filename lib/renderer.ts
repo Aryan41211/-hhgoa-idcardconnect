@@ -269,35 +269,74 @@ function teamCard(
   ctx.restore();
 }
 
-function stackPill(
+// STACK TAG — gold sticker tag with a concave V-notch cut into its right edge
+// (like a punched shipping label), clearly distinct from the pink name pill.
+// An empty stack renders a dashed cream outline placeholder instead.
+function notchedTagPath(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  depth: number
+) {
+  ctx.beginPath();
+  ctx.moveTo(x + 7, y);
+  ctx.lineTo(x + w - 7, y);
+  ctx.arcTo(x + w, y, x + w, y + 7, 7);
+  ctx.lineTo(x + w, y + h / 2 - 4);
+  ctx.lineTo(x + w - depth, y + h / 2);
+  ctx.lineTo(x + w, y + h / 2 + 4);
+  ctx.lineTo(x + w, y + h - 7);
+  ctx.arcTo(x + w, y + h, x + w - 7, y + h, 7);
+  ctx.lineTo(x + 7, y + h);
+  ctx.arcTo(x, y + h, x, y + h - 7, 7);
+  ctx.lineTo(x, y + 7);
+  ctx.arcTo(x, y, x + w, y, 7);
+  ctx.closePath();
+}
+
+function stackTag(
   ctx: CanvasRenderingContext2D,
   cx: number,
   y: number,
   maxW: number,
   stack?: string
 ) {
+  const h = 30;
+  const depth = 9;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.font = `700 16px ${FONT_LABEL}`;
   if (!stack) {
-    // placeholder mirrors the baked gold "STACK" label under each slot
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = COLORS.gold;
-    ctx.font = `700 18px ${FONT_LABEL}`;
-    ctx.fillText("STACK", cx, y + 16);
+    const w = ctx.measureText("STACK").width + 30;
+    const x = cx - w / 2;
+    ctx.save();
+    ctx.strokeStyle = COLORS.cream;
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash([6, 6]);
+    notchedTagPath(ctx, x, y, w, h, depth);
+    ctx.stroke();
+    ctx.restore();
+    ctx.fillStyle = COLORS.creamDark;
+    ctx.fillText("STACK", cx, y + h / 2 + 1);
     return;
   }
   const label = stack.toUpperCase();
-  ctx.font = `700 18px ${FONT_LABEL}`;
-  const tw = ctx.measureText(label).width;
-  const w = Math.min(Math.max(tw + 36, 96), maxW + 12);
+  const w = Math.min(Math.max(ctx.measureText(label).width + 40, 84), maxW);
   const x = cx - w / 2;
-  const h = 32;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillStyle = COLORS.punch;
-  roundedRect(ctx, x, y, w, h, h / 2);
+  ctx.save();
+  ctx.fillStyle = COLORS.gold;
+  notchedTagPath(ctx, x, y, w, h, depth);
   ctx.fill();
-  ctx.fillStyle = COLORS.white;
-  ctx.fillText(label, x + w / 2, y + h / 2);
+  ctx.restore();
+  // punched hole (reads as a hole against the dark band) + label
+  ctx.beginPath();
+  ctx.arc(x + 15, y + h / 2, 3.5, 0, Math.PI * 2);
+  ctx.fillStyle = COLORS.ink;
+  ctx.fill();
+  ctx.fillStyle = COLORS.ink;
+  ctx.fillText(label, x + w / 2 + 4, y + h / 2 + 1);
 }
 
 export function renderSquad(ctx: CanvasRenderingContext2D, opts: SquadOptions) {
