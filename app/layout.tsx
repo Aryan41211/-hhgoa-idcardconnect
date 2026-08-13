@@ -24,8 +24,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             HH GOA <span className="font-label text-sm text-teal">2026</span>
           </a>
           <nav className="flex gap-4 font-label text-xs">
-            <a href="/frame" className="transition hover:text-gold">PFP FRAME</a>
             <a href="/card" className="transition hover:text-gold">BUILDER ID</a>
+            <a href="/idcard" className="transition hover:text-gold">ID CARD</a>
             <a href="/squad" className="transition hover:text-gold">SQUAD</a>
           </nav>
         </header>
