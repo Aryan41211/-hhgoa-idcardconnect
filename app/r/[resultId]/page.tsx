@@ -17,15 +17,20 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const meta = id.length >= 6 ? await loadMeta(id) : null;
   const base = await baseUrl();
   const imageUrl = `${base}/api/image/${id}`;
-  const title = meta?.format === "card"
-    ? `I'm "${meta.title}" at HH Goa 2026`
-    : "HH Goa 2026 — Builders Are Here";
+  const title =
+    meta?.format === "card"
+      ? `I'm "${meta.title}" at HH Goa 2026`
+      : meta?.format === "idcard"
+        ? `${meta?.name ?? "My"} — HH Goa 2026 ID Card`
+        : "HH Goa 2026 — Builders Are Here";
   const dims =
     meta?.format === "card"
       ? { width: 1660, height: 1134 }
       : meta?.format === "squad"
         ? { width: 2138, height: 1108 }
-        : { width: 1080, height: 1080 };
+        : meta?.format === "idcard"
+          ? { width: 1050, height: 675 }
+          : { width: 1080, height: 1080 };
   return {
     title,
     description: "Generated with the HH Goa 2026 Frame Generator — #FrameInGoa",
@@ -63,7 +68,9 @@ export default async function ResultPage({ params }: Params) {
   const title =
     meta.format === "card"
       ? `I'm "${meta.title}" at HH Goa 2026`
-      : "My HH Goa 2026 frame is ready!";
+      : meta.format === "idcard"
+        ? `${meta.name ?? "My"} — HH Goa 2026 ID Card`
+        : "My HH Goa 2026 frame is ready!";
 
   return (
     <div className="mx-auto max-w-3xl px-5 pb-16 text-center">
