@@ -52,15 +52,11 @@ export const TEMPLATES = {
       { x: 700, y: 215, w: 218, h: 135 },
     ] as SlotRect[],
     // template px regions composited in code (slot-4 + baked text were covered
-    // with the bg fill so the band reflows without leftover gaps)
+    // with the bg fill so the band reflows without leftover gaps). Under-slot
+    // name pills + stack tags are offset from each slot rect in renderSquad.
     band: { y: 352, h: 202 },
-    stacks: [
-      { x: 165, y: 396, w: 200 },
-      { x: 420, y: 396, w: 215 },
-      { x: 700, y: 396, w: 218 },
-    ],
-    teamClass: { x: 60, y: 436, w: 455, h: 98 },
-    teamTagline: { x: 560, y: 444, w: 455, h: 98 },
+    teamClass: { x: 60, y: 436, w: 440, h: 98 },
+    teamTagline: { x: 515, y: 444, w: 355, h: 98 },
     chip: { x: 915, y: 518, w: 134, h: 31 },
   },
 } as const;
