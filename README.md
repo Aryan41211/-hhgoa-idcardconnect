@@ -8,6 +8,7 @@ Built for the HH Goa 2026 shortlisting task. Deadline: 11:59 PM, 13 Aug 2026.
 
 - **Format A — PFP Frame:** wraps an uploaded photo in the HH Goa frame, ready as an X profile picture.
 - **Format B — Builder ID Card:** photo + name + stack/role + an auto-generated "builder title" (keyword → witty title rules table, not a random string — try typing "Rust"), laid out like an event badge.
+- **Official ID Card — Connect:** photo + full name + institution + department/program/roll no/campus + a unique card number + validity + status, rendered as a proper 1050×675 ID card with live preview and download/share.
 - **Squad mode:** create a squad link → teammates open it, drop their photo + name into the next open slot, no login. Any visitor sees and can download the combined frame.
 
 No login. No signup wall. Upload → result in one pass.
@@ -21,6 +22,7 @@ Next.js (App Router) + TypeScript + Tailwind. Client-side canvas compositing wit
 - `/` — format picker
 - `/frame` — Format A flow
 - `/card` — Format B flow
+- `/idcard` — official HH Goa 2026 ID card (photo, institution, roll no, unique card number) with live canvas preview
 - `/squad` — create a squad → `/squad/[squadId]` collaborative frame
 - `/r/[resultId]` — per-generation share page; `generateMetadata()` sets the OG image so X shows the actual graphic in link previews (this is why link-sharing works)
 - `/api/save` — stores a generated image (base64), returns a `resultId`
