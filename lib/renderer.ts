@@ -319,12 +319,6 @@ export function renderSquad(ctx: CanvasRenderingContext2D, opts: SquadOptions) {
   //    #FRAMEINGOA chip, then reflows TEAM CLASS / TEAM TAGLINE / stacks / chip
   drawBandBg(ctx, T.band, T.w);
 
-  // stack pills under each slot
-  T.stacks.forEach((st, i) => {
-    if (!(i < opts.photos.length && opts.photos[i]?.img)) return;
-    stackPill(ctx, st.x + st.w / 2, st.y, st.w, opts.stacks?.[i]?.trim() || undefined);
-  });
-
   // team class + team tagline sticker cards
   teamCard(ctx, T.teamClass.x, T.teamClass.y, T.teamClass.w, T.teamClass.h, "TEAM CLASS",
     (opts.teamClass || "YOUR TEAM NAME").toUpperCase(), -0.02, COLORS.punch);
