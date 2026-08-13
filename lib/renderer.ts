@@ -367,22 +367,32 @@ export function renderSquad(ctx: CanvasRenderingContext2D, opts: SquadOptions) {
   // #FRAMEINGOA chip, pinned bottom-right corner, clear of the tagline card
   hashtagChip(ctx, T.chip.x, T.chip.y, 0.5, COLORS.punch);
 
-  // 4) name pills on each filled slot (bottom-inside)
+  // 4) name pill + stack tag below each filled slot's photo (slot.bottom + pad)
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   T.slots.forEach((s, i) => {
     const has = i < opts.photos.length && opts.photos[i]?.img;
     if (!has) return;
+
+    // NAME PILL — pink rounded pill, sits just below the photo (7px gap)
     const label = (opts.names[i] ?? "MEMBER").toUpperCase();
-    ctx.font = `700 20px ${FONT_LABEL}`;
-    const lw = ctx.measureText(label).width + 34;
-    const lx = s.x + s.w / 2 - lw / 2;
-    const ly = s.y + s.h - 30;
+    let nameSize = 20;
+    ctx.font = `700 ${nameSize}px ${FONT_LABEL}`;
+    let lw = ctx.measureText(label).width + 34;
+    while (lw > s.w - 24 && nameSize > 12) {
+      nameSize -= 2;
+      ctx.font = `700 ${nameSize}px ${FONT_LABEL}`;
+      lw = ctx.measureText(label).width + 34;
+    }
+    const ly = s.y + s.h + 10;
     ctx.fillStyle = COLORS.punch;
-    roundedRect(ctx, lx, ly, lw, 30, 15);
+    roundedRect(ctx, s.x + s.w / 2 - lw / 2, ly, lw, 30, 15);
     ctx.fill();
     ctx.fillStyle = COLORS.white;
-    ctx.fillText(label, lx + lw / 2, ly + 16);
+    ctx.fillText(label, s.x + s.w / 2, ly + 16);
+
+    // STACK TAG — gold notched tag under the name pill
+    stackTag(ctx, s.x + s.w / 2, s.y + s.h + 48, s.w, opts.stacks?.[i]?.trim() || undefined);
   });
 
   ctx.restore();
