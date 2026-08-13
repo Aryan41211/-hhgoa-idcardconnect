@@ -19,6 +19,7 @@ import { HASHTAG, TEMPLATES } from "@/lib/theme";
 type Member = {
   has: boolean;
   name?: string;
+  stack?: string | null;
   photoBase64?: string | null;
   crop?: CropRect | null;
 };
@@ -40,6 +41,9 @@ export default function SquadClient({ squadId }: { squadId: string }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [name, setName] = useState("");
+  const [stack, setStack] = useState("");
+  const [teamClass, setTeamClass] = useState("");
+  const [teamTagline, setTeamTagline] = useState("");
   const [candidate, setCandidate] = useState<HTMLImageElement | null>(null);
   const [candidateSrc, setCandidateSrc] = useState("");
   const [cropOpen, setCropOpen] = useState(false);
@@ -52,6 +56,8 @@ export default function SquadClient({ squadId }: { squadId: string }) {
     const json = await res.json();
     if (!Array.isArray(json.members)) return setStatus("missing");
     setMembers(json.members as Member[]);
+    if (typeof json.teamClass === "string") setTeamClass(json.teamClass);
+    if (typeof json.teamTagline === "string") setTeamTagline(json.teamTagline);
     setStatus("ready");
   }, [id]);
 
@@ -80,7 +86,14 @@ export default function SquadClient({ squadId }: { squadId: string }) {
             photos.push({ img: null });
           }
         }
-        renderSquad(ctx, { photos, names: members.map((m) => m?.name ?? ""), template });
+        renderSquad(ctx, {
+          photos,
+          names: members.map((m) => m?.name ?? ""),
+          stacks: members.map((m) => m?.stack ?? ""),
+          teamClass: teamClass || undefined,
+          teamTagline: teamTagline || undefined,
+          template,
+        });
         if (!cancelled) setPreview(canvas.toDataURL("image/png"));
       } catch {
         /* keep previous preview */
@@ -89,7 +102,7 @@ export default function SquadClient({ squadId }: { squadId: string }) {
     return () => {
       cancelled = true;
     };
-  }, [status, members]);
+  }, [status, members, teamClass, teamTagline]);
 const openIndex = members.findIndex((m) => !m?.has);
   const filled = members.filter((m) => m?.has).length;
 
@@ -128,7 +141,7 @@ const openIndex = members.findIndex((m) => !m?.has);
       const res = await fetch(`/api/squad/${id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ photoBase64: b64, name, crop }),
+        body: JSON.stringify({ photoBase64: b64, name, stack, crop }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "add failed");
@@ -136,9 +149,29 @@ const openIndex = members.findIndex((m) => !m?.has);
       setCandidateSrc("");
       setCrop(null);
       setName("");
+      setStack("");
       await refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to add you.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function saveTeam() {
+    setBusy(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/squad/${id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ teamClass, teamTagline }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "save failed");
+      await refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to save team details.");
     } finally {
       setBusy(false);
     }
@@ -165,7 +198,7 @@ if (status === "loading") {
     <div className="mx-auto max-w-5xl px-5 pb-16">
       <h1 className="text-center font-display text-4xl tracking-wide text-gold">SQUAD FRAME</h1>
       <p className="mt-2 text-center font-label text-sm text-teal">
-        {filled}/4 builders in · {openIndex !== -1 ? `slot ${openIndex + 1} is open` : "squad is full"}
+        {filled}/3 builders in · {openIndex !== -1 ? `slot ${openIndex + 1} is open` : "squad is full"}
       </p>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-2">
@@ -224,6 +257,16 @@ if (status === "loading") {
                   className="mt-1 w-full rounded-xl border border-cream/20 bg-forest-deep px-4 py-3 font-display text-lg text-cream outline-none focus:border-gold"
                 />
               </label>
+              <label className="mt-3 block">
+                <span className="font-label text-xs uppercase text-cream/70">Your stack</span>
+                <input
+                  value={stack}
+                  onChange={(e) => setStack(e.target.value)}
+                  placeholder="react · node · figma"
+                  maxLength={40}
+                  className="mt-1 w-full rounded-xl border border-cream/20 bg-forest-deep px-4 py-3 font-label text-sm text-cream outline-none focus:border-gold"
+                />
+              </label>
               <button
                 onClick={() => void addMe()}
                 disabled={!candidate || busy}
@@ -234,10 +277,42 @@ if (status === "loading") {
             </>
           ) : (
             <p className="mt-3 font-label text-sm text-cream/70">
-              All four slots are taken. Grab the PNG and keep the wave going.
+              All three slots are taken. Grab the PNG and keep the wave going.
             </p>
           )}
           {error && <p className="mt-3 rounded-xl bg-punch/15 px-4 py-2 font-label text-sm text-cream">{error}</p>}
+
+          <div className="mt-6 rounded-xl border border-cream/15 bg-forest-deep/60 p-4">
+            <h3 className="font-display text-lg text-gold">TEAM DETAILS</h3>
+            <p className="mt-1 font-label text-xs text-cream/60">Shown on the frame. Anyone on the link can edit — last save wins.</p>
+            <label className="mt-3 block">
+              <span className="font-label text-xs uppercase text-cream/70">Team class</span>
+              <input
+                value={teamClass}
+                onChange={(e) => setTeamClass(e.target.value)}
+                placeholder="SQUAD 26"
+                maxLength={60}
+                className="mt-1 w-full rounded-xl border border-cream/20 bg-forest-deep px-4 py-3 font-display text-lg text-cream outline-none focus:border-gold"
+              />
+            </label>
+            <label className="mt-3 block">
+              <span className="font-label text-xs uppercase text-cream/70">Team tagline</span>
+              <input
+                value={teamTagline}
+                onChange={(e) => setTeamTagline(e.target.value)}
+                placeholder="BUILD · SHIP · REPEAT"
+                maxLength={60}
+                className="mt-1 w-full rounded-xl border border-cream/20 bg-forest-deep px-4 py-3 font-label text-sm text-cream outline-none focus:border-gold"
+              />
+            </label>
+            <button
+              onClick={() => void saveTeam()}
+              disabled={busy}
+              className="mt-4 w-full rounded-full bg-gold px-6 py-3 font-display text-sm tracking-widest text-forest transition hover:bg-gold-dark disabled:opacity-40"
+            >
+              {busy ? "SAVING…" : "SAVE TEAM DETAILS"}
+            </button>
+          </div>
 
           <div className="mt-6">
             <span className="font-label text-xs uppercase text-cream/60">Share this link</span>
