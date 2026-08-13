@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { saveResult } from "@/lib/storage";
 
-const FORMATS = ["frame", "card", "squad"] as const;
+const FORMATS = ["frame", "card", "squad", "idcard"] as const;
 
 export async function POST(req: NextRequest) {
   try {

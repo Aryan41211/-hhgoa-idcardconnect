@@ -9,7 +9,7 @@ import crypto from "crypto";
 
 export type ResultMeta = {
   id: string;
-  format: "frame" | "card" | "squad";
+  format: "frame" | "card" | "squad" | "idcard";
   name?: string;
   stack?: string;
   title?: string;
