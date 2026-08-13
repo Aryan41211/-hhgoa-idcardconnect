@@ -22,7 +22,10 @@ export type CardOptions = {
 export type SquadOptions = {
   photos: PhotoInput[];
   names: string[];
+  stacks?: string[];
   team?: string;
+  teamClass?: string;
+  teamTagline?: string;
   template: HTMLImageElement; // public/templates/squad.png
 };
 
@@ -206,7 +209,97 @@ export function renderCard(ctx: CanvasRenderingContext2D, opts: CardOptions) {
   ctx.restore();
 }
 
-// Squad — from the provided `squad` template (3 top slots + 1 bottom slot) ---
+// Squad — from the provided `squad` template (3 top slots; the bottom band is
+// redrawn in code so team class / tagline / #FRAMEINGOA reflow with no gap) -----
+function drawBandBg(ctx: CanvasRenderingContext2D, band: { y: number; h: number }, w: number) {
+  const g = ctx.createLinearGradient(0, band.y, 0, band.y + band.h);
+  g.addColorStop(0, "#05281A"); // matches the dark template greens (#01230F area)
+  g.addColorStop(1, "#01210F");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, band.y, w, band.h);
+}
+
+// TEAM CLASS / TEAM TAGLINE — cream torn-paper-style sticker card with a washi
+// tape corner, mono label + condensed display value (auto-shrunk to fit).
+function teamCard(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  label: string,
+  value: string,
+  angle: number,
+  tapeColor: string
+) {
+  ctx.save();
+  ctx.translate(x + w / 2, y + h / 2);
+  ctx.rotate(angle);
+  ctx.translate(-w / 2, -h / 2);
+
+  // torn-paper body
+  roundedRect(ctx, 0, 0, w, h, 18);
+  ctx.fillStyle = COLORS.cream;
+  ctx.fill();
+  ctx.strokeStyle = "rgba(27,42,35,0.14)";
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  drawWashiTape(ctx, 20, 18, 110, 40, -0.22, tapeColor);
+  drawStar(ctx, w - 26, 34, 5, 12, 5, COLORS.gold, 0.3);
+
+  // label
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
+  ctx.fillStyle = COLORS.goldDark;
+  ctx.font = `700 18px ${FONT_LABEL}`;
+  ctx.fillText(label, 28, 52);
+
+  // value — condensed display, shrink to fit the card width
+  ctx.fillStyle = COLORS.ink;
+  const maxW = w - 56;
+  let size = 44;
+  ctx.font = `400 ${size}px ${FONT_DISPLAY}`;
+  while (ctx.measureText(value).width > maxW && size > 20) {
+    size -= 2;
+    ctx.font = `400 ${size}px ${FONT_DISPLAY}`;
+  }
+  ctx.fillText(value, 28, 88);
+
+  ctx.restore();
+}
+
+function stackPill(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  y: number,
+  maxW: number,
+  stack?: string
+) {
+  if (!stack) {
+    // placeholder mirrors the baked gold "STACK" label under each slot
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = COLORS.gold;
+    ctx.font = `700 18px ${FONT_LABEL}`;
+    ctx.fillText("STACK", cx, y + 16);
+    return;
+  }
+  const label = stack.toUpperCase();
+  ctx.font = `700 18px ${FONT_LABEL}`;
+  const tw = ctx.measureText(label).width;
+  const w = Math.min(Math.max(tw + 36, 96), maxW + 12);
+  const x = cx - w / 2;
+  const h = 32;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = COLORS.punch;
+  roundedRect(ctx, x, y, w, h, h / 2);
+  ctx.fill();
+  ctx.fillStyle = COLORS.white;
+  ctx.fillText(label, x + w / 2, y + h / 2);
+}
+
 export function renderSquad(ctx: CanvasRenderingContext2D, opts: SquadOptions) {
   const T = TEMPLATES.squad;
   const o = ctx.canvas.width / T.w;
@@ -216,13 +309,32 @@ export function renderSquad(ctx: CanvasRenderingContext2D, opts: SquadOptions) {
   // 1) template background
   ctx.drawImage(opts.template, 0, 0, T.w, T.h);
 
-  // 2) drop photos into the 4 slots (expand slightly so smiley is fully covered)
+  // 2) photos into the 3 top slots (expand slightly so smiley is fully covered)
   T.slots.forEach((s, i) => {
     const slot = { x: s.x - 3, y: s.y - 3, w: s.w + 6, h: s.h + 6 };
     drawPhoto(ctx, opts.photos[i] ?? { img: null }, slot, 0);
   });
 
-  // 3) name pills on each filled slot (bottom-inside)
+  // 3) redraw the bottom band: covers the baked 4th slot + torn-paper blocks +
+  //    #FRAMEINGOA chip, then reflows TEAM CLASS / TEAM TAGLINE / stacks / chip
+  drawBandBg(ctx, T.band, T.w);
+
+  // stack pills under each slot
+  T.stacks.forEach((st, i) => {
+    if (!(i < opts.photos.length && opts.photos[i]?.img)) return;
+    stackPill(ctx, st.x + st.w / 2, st.y, st.w, opts.stacks?.[i]?.trim() || undefined);
+  });
+
+  // team class + team tagline sticker cards
+  teamCard(ctx, T.teamClass.x, T.teamClass.y, T.teamClass.w, T.teamClass.h, "TEAM CLASS",
+    (opts.teamClass || "YOUR TEAM NAME").toUpperCase(), -0.02, COLORS.punch);
+  teamCard(ctx, T.teamTagline.x, T.teamTagline.y, T.teamTagline.w, T.teamTagline.h, "TEAM TAGLINE",
+    (opts.teamTagline || "BUILD · SHIP · REPEAT").toUpperCase(), 0.02, COLORS.gold);
+
+  // #FRAMEINGOA chip, pinned bottom-right (same corner as the baked one)
+  hashtagChip(ctx, T.chip.x + 10, T.chip.y + T.chip.h / 2, 0.55, COLORS.punch);
+
+  // 4) name pills on each filled slot (bottom-inside)
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   T.slots.forEach((s, i) => {
