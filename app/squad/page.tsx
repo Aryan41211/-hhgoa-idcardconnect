@@ -29,7 +29,7 @@ export default function SquadLanding() {
         SQUAD MODE
       </h1>
       <p className="mx-auto mt-4 max-w-lg font-label text-sm leading-relaxed text-cream/70">
-        One link. Up to four teammates. No login — everyone drops their own photo into the
+        One link. Three teammates. No login — everyone drops their own photo into the
         next empty slot of the <em>same</em> combined frame.
       </p>
 
